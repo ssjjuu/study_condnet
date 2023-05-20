@@ -1,7 +1,7 @@
 import numpy
 import scipy.misc
 import gzip
-import cPickle as pickle
+import pickle
 
 import theano
 import theano.tensor as T
@@ -39,7 +39,7 @@ class SharedGenerator:
         exp = pickle.load(file(path,'r'))
         for g in exp:
             for i in range(len(exp[g])):
-                print g, exp[g][i].shape
+                print (g, exp[g][i].shape)
                 self.param_groups[g][i].set_value(exp[g][i])
 shared = SharedGenerator()
 
@@ -62,7 +62,7 @@ class InputSparseHiddenLayer:
         self.block_size = block_size
 
     def __call__(self, x, xmask):
-        print xmask
+        print (xmask)
         return self.activation(sparse_dot(x, xmask, self.W, None, self.b, self.block_size))
 
 class StackModel:
@@ -149,8 +149,8 @@ class GenericClassificationDataset:
         trainX, trainY, testX, testY = pickle.load(file(self.alt_path if self.alt_path else '/data/cifar/cifar_10_shuffled.pkl','r'))
         trainX = numpy.float32(trainX / 255.)
         testX = numpy.float32(testX / 255.)
-        print testX.shape, trainX.shape
-        print testX.mean(),trainX.mean()
+        print (testX.shape, trainX.shape)
+        print (testX.mean(),trainX.mean())
         self.train = [trainX[:40000], trainY[:40000]]
         self.valid = [trainX[40000:], trainY[40000:]]
         self.test = [testX, testY]

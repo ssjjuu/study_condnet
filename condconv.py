@@ -468,7 +468,7 @@ def main(exp_params):
 
 isTestTime = theano.shared(numpy.float32(0), 'isTestTime')
 def lrelu():
-    return lambda x: T.maximum(0.01*x,x) # todo
+    return lambda x: T.maximum(0.01*x,x)
 
 def dropout(p):
     return lambda x: ifelse(isTestTime,

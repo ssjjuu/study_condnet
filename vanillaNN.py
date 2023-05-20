@@ -1,6 +1,6 @@
 import theano
 import theano.tensor as T
-import numpy
+import numpy as np
 import uuid
 import time
 
@@ -11,7 +11,7 @@ from theano_tools import shared, HiddenLayer, StackModel, RandomStreams, momentu
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib import pyplot
-import cPickle as pickle
+import pickle
 # symbolic RNG
 srng = RandomStreams(142857)
 
@@ -44,7 +44,7 @@ def build_model(new_model=True):
         os.chdir(expid)
         file('code.py','w').write(code)
 
-        print expid
+        print (expid)
 
         f = file("params.txt",'w')
         for i in hyperparams:
@@ -114,8 +114,8 @@ def main():
         valid_error, valid_cost = data.validate(test, 50)
         valid_time = time.time() - t0
         print
-        print i, cost/N, error/N
-        print valid_error, valid_cost, valid_time
+        print (i, cost/N, error/N)
+        print (valid_error, valid_cost, valid_time)
         errors.append(error/N)
         costs.append(cost/N)
         valid_errors.append(valid_error)
@@ -136,20 +136,20 @@ def test(expid):
     # OMP_NUM_THREADS=1 THEANO_FLAGS=device=cpu taskset -c 0 python $(expip)/code.py $(expid)
     import os
     os.chdir(expid)
-    print "loading data"
+    print ("loading data")
     data = GenericClassificationDataset("cifar10", "../cifar_10_shuffled.pkl")
 
-    print "building model"
+    print ("building model")
     model,learn,test = build_model(False)
-    print "importing weights"
+    print ("importing weights")
     shared.importFromFile("weights.pkl")
-    print "testing"
+    print ("testing")
     import time
     t0 = time.time()
     test_error, test_cost = data.doTest(test, 50)
     t1 = time.time()
-    print "Error, cost, time(s)"
-    print test_error, test_cost, t1-t0
+    print ("Error, cost, time(s)")
+    print (test_error, test_cost, t1-t0)
     specialized_test_time = t1-t0
     normal_test_time = t1-t0
 
@@ -159,7 +159,7 @@ def test(expid):
 
 if __name__ == "__main__":
     import sys
-    print sys.argv
+    print (sys.argv)
     if len(sys.argv) <= 1:
         main()
     else:
