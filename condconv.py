@@ -1,12 +1,10 @@
 from __future__ import print_function
 
 
-import os
 import time
-import numpy
 import theano
-import theano.tensor as T
 from theano_tools import*
+from theano_tools.deep import ConvLayer, HiddenLayer, StackModel, Maxpool, relu, shared
 
 if 'gpu' in theano.config.device:
     from theano.sandbox.rng_mrg import MRG_RandomStreams as SRNG
@@ -29,9 +27,9 @@ except BaseException as e:
     canPlot = False
 
 
-
 condnet_max_prob = theano.shared(numpy.float32(0.95))
 condnet_min_prob = theano.shared(numpy.float32(0.025))
+
 
 class CondConvBlock:
 
@@ -56,16 +54,16 @@ class CondConvBlock:
     def __call__2(self, x):
         policy_activations = []
         h = x
-        for i,l in enumerate(self.layers):
-            print("layer",i)
+        for i, l in enumerate(self.layers):
+            print("layer", i)
             pol_i = self.policy_layers[i]
-            p_i = pol_i(h.mean(axis=[2,3])).flatten()
+            p_i = pol_i(h.mean(axis=[2, 3])).flatten()
             p_i = p_i * (condnet_max_prob - condnet_min_prob) + condnet_min_prob
             # act shape: (mbs, 1)
-            act = T.cast(srng.uniform(p_i.shape) < p_i,'float32')
+            act = T.cast(srng.uniform(p_i.shape) < p_i, 'float32')
             sample_prob = p_i * act + (1-p_i)*(1-act)
 
-            dsact = act.dimshuffle(0,'x','x','x')
+            dsact = act.dimshuffle(0, 'x', 'x', 'x')
             h = h * (1-dsact) + dsact * l(h)
 
             self.activations.append("todo")
@@ -77,30 +75,30 @@ class CondConvBlock:
     def __call__(self, x):
         policy_activations = []
         h = x
-        for i,l in enumerate(self.layers):
-            print("layer",i)
+        for i, l in enumerate(self.layers):
+            print("layer", i)
             pol_i = self.policy_layers[i]
-            p_i = pol_i(h.mean(axis=[2,3])).flatten()
+            p_i = pol_i(h.mean(axis=[2, 3])).flatten()
             p_i = p_i * (condnet_max_prob - condnet_min_prob) + condnet_min_prob
-            act = T.cast(srng.uniform(p_i.shape) < p_i,'float32')
+            act = T.cast(srng.uniform(p_i.shape) < p_i, 'float32')
             # this is really annoying but theano is doing something which I don't
             # understand and evaluates conv(h[indexes]) during the grad pass even if the
             # condition is false, so to fix this, if no example in the minibatch activates
             # a layer, I activate one randomly.
-            #b = T.set_subtensor(act[T.cast(srng.uniform((1,),0,act.shape[0]), 'int32')],
+            # b = T.set_subtensor(act[T.cast(srng.uniform((1,),0,act.shape[0]), 'int32')],
             #                    numpy.int8(1))
-            b = T.set_subtensor(act[T.cast(srng.uniform((1,),0,act.shape[0]), 'int32')],
+            b = T.set_subtensor(act[T.cast(srng.uniform((1,), 0, act.shape[0]), 'int32')],
                                 numpy.float32(1))
 
-            if not theano.config.device == 'cpu': # buuuut it doesn't work on cpu of course
-                act = ifelse(T.eq(act.sum(),0),
+            if not theano.config.device == 'cpu':  # buuuut it doesn't work on cpu of course
+                act = ifelse(T.eq(act.sum(), 0),
                              b, act)
             # compute sample prob after "fixing" act
             sample_prob = p_i * act + (1-p_i)*(1-act)
             indexes = T.arange(x.shape[0])[act.nonzero()]
 
             # so I don't have to check the condition, since it should always be true:
-            #h = ifelse(T.gt(h_sub.shape[0],0),
+            # h = ifelse(T.gt(h_sub.shape[0],0),
             #           T.set_subtensor(h[indexes], l(h_sub)),
             # h)
 
@@ -112,29 +110,29 @@ class CondConvBlock:
             self.layer_masks.append(act)
         return h
 
+
 one = T.as_tensor_variable(numpy.float32(1))
 
 
-
-def plot_multiclass_activation_density(ps, path="condnet_densities.png",plotLines=False):
+def plot_multiclass_activation_density(ps, path="condnet_densities.png", plotLines=False):
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as pp
 
-    colors = [[1,0,0],[.5,.5,0],[1,0,1],
-              [0,1,0],[0,1,1],
-              [0,0,1],
-              [.5,0,1],[1,.5,0],
-              [0,.5,1],[0,1,.5]]
+    colors = [[1, 0, 0], [.5, .5, 0], [1, 0, 1],
+              [0, 1, 0], [0, 1, 1],
+              [0, 0, 1],
+              [.5, 0, 1], [1, .5, 0],
+              [0, .5, 1], [0, 1, .5]]
 
     pp.clf()
     fig = pp.gcf()
     ax = fig.gca()
-    pp.axis([-0.1,ps[0][0].shape[0]+.1,0,1])
-    ax.set_xticks(numpy.arange(0,ps[0][0].shape[0],1))
-    ax.set_yticks(numpy.arange(0,1,0.1))
+    pp.axis([-0.1, ps[0][0].shape[0] + .1, 0, 1])
+    ax.set_xticks(numpy.arange(0, ps[0][0].shape[0], 1))
+    ax.set_yticks(numpy.arange(0, 1, 0.1))
     for cls in range(10):
-        if len(ps[cls]) < 1: continue
+        if len(ps[cls]) < 1 : continue
         nlayers = ps[cls][0].shape[0]
         xv = numpy.arange(nlayers) + cls*0.08
         nex = min(len(ps[cls]),100)
@@ -468,7 +466,7 @@ def main(exp_params):
 
 isTestTime = theano.shared(numpy.float32(0), 'isTestTime')
 def lrelu():
-    return lambda x: T.maximum(0.01*x,x)
+    return lambda x: T.maximum(0.01*x,x) # todo
 
 def dropout(p):
     return lambda x: ifelse(isTestTime,

@@ -39,10 +39,10 @@ def build_model(new_model=True):
         expid = str(uuid.uuid4())
         import os
         import os.path
-        code = file(os.path.abspath(__file__),'r').read()
+        code = open(os.path.abspath(__file__),'r').read()
         os.mkdir(expid)
         os.chdir(expid)
-        file('code.py','w').write(code)
+        open('code.py','w').write(code)
 
         print (expid)
 
