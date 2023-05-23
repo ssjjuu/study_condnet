@@ -7,7 +7,7 @@
 4.     conda install numpy==1.19.5    
 5.     pip install pickle-mixin    
 6.     pip install nose    
-10. 모델은 `condconv` 에 선언되어 있습니다.(아마)     
+10. 모델은 `condconv.py` 에 선언되어 있습니다.(아마)     
     
     
 
