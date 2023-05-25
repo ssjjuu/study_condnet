@@ -227,7 +227,7 @@ class GenericClassificationDataset:
 
     def trainMinibatches(self, minibatch_size=32):
         nminibatches = self.train[0].shape[0] / minibatch_size
-        indexes = numpy.arange(nminibatches)
+        indexes = numpy.arange(nminibatches).astype('int32')
         numpy.random.shuffle(indexes)
         for i in indexes:
             yield self.pp(self.train[0][i*minibatch_size:(i+1)*minibatch_size],

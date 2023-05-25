@@ -4,7 +4,7 @@ from __future__ import print_function
 import time
 import theano
 from theano_tools import*
-from theano_tools.deep import ConvLayer, HiddenLayer, StackModel, Maxpool, relu, shared
+from theano_tools.deep import ConvLayer, HiddenLayer, StackModel, Maxpool, relu, shared, adam
 
 if 'gpu' in theano.config.device:
     from theano.sandbox.rng_mrg import MRG_RandomStreams as SRNG
@@ -294,6 +294,9 @@ def main(exp_params):
     model = eval(exp_params['model'])(policies, sample_probabilities, layer_masks, activations,
                                       nlayers, nfilters)
 
+    #TODO[dk]: make x to float32
+    x = x.astype('float32')
+
     pred = model(x.reshape((x.shape[0],image_ndim,image_size,image_size)))
     # this loss just increases the variance, not good?
     #loss = T.sum(T.nnet.categorical_crossentropy(pred, y))
@@ -390,7 +393,8 @@ def main(exp_params):
         for x,y in data.trainMinibatches(64):
             i+=1
 
-            c,e,p = learn(x,y)
+            # c,e,p = learn(x,y)
+            c,e,p = learn(x.reshape(x.shape[0],-1),y.reshape(-1))
 
             #dcls.append(c)
             #activation_ratios.append(ar)

@@ -1,7 +1,22 @@
 ## 김동재 수정 중
 windows에서 돌려봐야할것같다. 
+http://funmv2013.blogspot.com/2015/08/windows-theano.html
+
+문제가 생기는 부분 확인해봤더니 gcc 컴파일러 이슈가 대부분인듯 근데 그냥 해결안하고 쓰기로 함.
+그러면 자동적으로 C 가 아니라 python을 쓰는 느린 방식을 사용하게 되는것같음.
+
+느려도 어차피 theano 쓸거 아니니까 확인만하면대니까 어쩔 티비
+
+https://visualstudio.microsoft.com/ko/visual-cpp-build-tools/
+
+pip install theano==0.9.0
+
+pip install scipy==1.6.1
+
+
 
 ---
+
 # condnet
 
 ## 실행방법    
