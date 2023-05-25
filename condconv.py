@@ -583,7 +583,10 @@ def choose_and_run_exp(which):
 if __name__ == "__main__":
     import sys
     breakAfter1Epoch = False
+    sys.argv=[None, "debug", "exp", "0.ini"]
 
+    # TODO[dk]: spawn? init?
+    # choose_and_run_exp(sys.argv[2])
 
     if sys.argv[1] == "spawn":
         spawn()
