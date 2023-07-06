@@ -13,7 +13,9 @@ pip install theano==0.9.0
 
 pip install scipy==1.6.1
 
+pip install matplotlib
 
+pip install numpy==1.19.5
 
 ---
 
