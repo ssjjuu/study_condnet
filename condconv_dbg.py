@@ -83,13 +83,16 @@ class CondConvBlock:
             pol_i = self.policy_layers[i]
             p_i = pol_i(h.mean(axis=[2, 3])).flatten()
             p_i = p_i * (condnet_max_prob - condnet_min_prob) + condnet_min_prob
-            act = T.cast(srng.uniform(p_i.shape) < p_i, 'float32')
+            act = T.cast(srng.uniform(p_i.shape) < p_i, 'float32') # 여기가 Ber
+
+
             # this is really annoying but theano is doing something which I don't
             # understand and evaluates conv(h[indexes]) during the grad pass even if the
             # condition is false, so to fix this, if no example in the minibatch activates
             # a layer, I activate one randomly.
             # b = T.set_subtensor(act[T.cast(srng.uniform((1,),0,act.shape[0]), 'int32')],
             #                    numpy.int8(1))
+
             b = T.set_subtensor(act[T.cast(srng.uniform((1,), 0, act.shape[0]), 'int32')],
                                 numpy.float32(1))
 
@@ -105,7 +108,7 @@ class CondConvBlock:
             #           T.set_subtensor(h[indexes], l(h_sub)),
             # h)
 
-            h = T.set_subtensor(h[indexes], l(h[indexes]))
+            h = T.set_subtensor(h[indexes], l(h[indexes])) # 여기 마지막 연산 부분 같음
 
             self.activations.append("todo")
             self.policies.append(p_i)
@@ -281,13 +284,15 @@ def main(exp_params):
     pairwise_weight = theano.shared(numpy.float32(30000.))
     pairwise_decay =  0.999
 
-
+    ######## 파라미터 저장하는거 #######
 
     #theano.config.compute_test_value = 'raise'
     x = T.matrix('x')
     x.tag.test_value = numpy.float32(numpy.random.random((64,image_ndim*image_size*image_size)))
     y = T.ivector('y')
     y.tag.test_value = numpy.int32([1]*64)
+
+    ####### 미리 변수를 선정해놓고 그걸 업데이트하면 연결된 녀석들이 업데이트 되게 만들어져 있어요
 
     policies = []
     sample_probabilities = []
